@@ -93,7 +93,7 @@ module.exports = {
       });
     });
   },
-  search: async function (request) {
+  observe: async function (request) {
     return new Promise((resolve, reject) => {
       search(request).then((response) => {
         let list = [];
@@ -144,6 +144,39 @@ module.exports = {
               end_time: new moment().add(1, 'h').toDate().toISOString(),
             },
           });
+        });
+
+        resolve(data);
+      });
+    });
+  },
+  deliberate: async function (request) {
+    return new Promise((resolve, reject) => {
+      search(request).then((response) => {
+        let list = [];
+        response.map((element) => {
+          if (element.blacklists.length > 0) {
+            list.push(element.blacklists[0]);
+            //console.dir(element.blacklists, { depth: null });
+          }
+        });
+        let data = {
+          verdicts: {
+            count: list.length,
+            docs: [],
+          }
+        };
+        list.map((element) => {
+          data.verdicts.docs.push({
+            type: 'verdict',
+            disposition: 2,
+            observable: { value: element.value, type: element.type },
+            disposition_name: 'Malicious',
+            valid_time: {
+              start_time: new moment().toDate().toISOString(),
+              end_time: new moment().add(1, 'h').toDate().toISOString(),
+            },
+          });          
         });
 
         resolve(data);

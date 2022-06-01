@@ -39,7 +39,7 @@ function verifyToken(req, res, next) {
   }
 }
 
-app.get('/', verifyToken, function (req, res) {
+app.get('/', function (req, res) {
   getPublicIp();
   var sourceIp = (function (req) {
     var ipaddr = require('ipaddr.js');
@@ -187,8 +187,34 @@ app.post('/respond/trigger', verifyToken, async (req, res) => {
 });
 
 app.post('/deliberate/observables', verifyToken, async (req, res) => {
-  let returnObj = { data: {} };
-  res.json(returnObj);
+  // filter request regarding licence level
+  // console.dir(req.body, { depth: null });
+  let request = [];
+  req.body.map((element) => {
+    if (
+      element.type == 'ip' &&
+      (req.licence == 'Essentials' ||
+        req.licence == 'Advantage' ||
+        req.licence == 'Premier')
+    ) {
+      request.push(element);
+    }
+    if (
+      element.type == 'domain' &&
+      (req.licence == 'Advantage' || req.licence == 'Premier')
+    ) {
+      request.push(element);
+    }
+    if (element.type == 'url' && req.licence == 'Premier') {
+      request.push(element);
+    }
+  });
+  // console.dir(request, { depth: null });
+  // Blacklist search for verdicts 
+  blacklist.deliberate(request).then((data) => {
+    // console.dir(data, { depth: null });
+    res.json({ data });
+  });
 });
 
 app.post('/refer/observables', verifyToken, async (req, res) => {
@@ -221,7 +247,7 @@ app.post('/observe/observables', verifyToken, async (req, res) => {
   });
   // console.dir(request, { depth: null });
   // Blacklist search for verdicts & judgements
-  blacklist.search(request).then((data) => {
+  blacklist.observe(request).then((data) => {
     // console.dir(data, { depth: null });
     res.json({ data });
   });
