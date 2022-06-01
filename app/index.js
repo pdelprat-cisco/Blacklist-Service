@@ -218,7 +218,7 @@ app.post('/deliberate/observables', verifyToken, async (req, res) => {
 });
 
 app.post('/refer/observables', verifyToken, async (req, res) => {
-  let returnObj = { data: {} };
+  let returnObj = { };
   res.json(returnObj);
 });
 
